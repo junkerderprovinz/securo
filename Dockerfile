@@ -101,8 +101,10 @@ VOLUME /data
 
 EXPOSE 8080
 
+# The backend is asked first, so checks during the migrations leave no
+# connection errors in nginx's log.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8080/api/health"]
+    CMD ["sh", "-c", "curl -fsS -o /dev/null http://127.0.0.1:8000/api/health && curl -fsS -o /dev/null http://127.0.0.1:8080/api/health"]
 
 # The base image's CMD starts uvicorn; under /init it would run as the container's
 # main program and take the container down whenever it exits.
