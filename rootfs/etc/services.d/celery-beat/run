@@ -1,0 +1,10 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+# Queues the periodic tasks. The schedule file lives on the volume so a restart
+# does not run every task again at once.
+
+until [ -f /run/securo/migrated ]; do sleep 2; done
+cd /app || exit 1
+
+exec gosu "${PUID:-99}:${PGID:-100}" env HOME=/tmp/securo \
+    celery -A app.worker beat --loglevel=info --schedule /data/celery/beat-schedule

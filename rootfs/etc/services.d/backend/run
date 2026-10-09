@@ -1,0 +1,24 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+# Brings the database schema up to date, then serves the API on the loopback for
+# nginx. The worker and the scheduler wait for /run/securo/migrated.
+
+PUID="${PUID:-99}"
+PGID="${PGID:-100}"
+cd /app || exit 1
+
+as_app() {
+    gosu "${PUID}:${PGID}" env HOME=/tmp/securo "$@"
+}
+
+# A failed migration is a setting to fix, not a crash to retry every second.
+if ! as_app prepare-database || ! as_app alembic upgrade head; then
+    echo "[backend] Migrations failed, retrying in 30s." >&2
+    sleep 30
+    exit 1
+fi
+touch /run/securo/migrated
+
+# Without --no-access-log every health check would add a line to the log.
+exec gosu "${PUID}:${PGID}" env HOME=/tmp/securo \
+    uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log

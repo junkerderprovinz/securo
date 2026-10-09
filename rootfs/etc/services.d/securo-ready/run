@@ -1,0 +1,31 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+# Prints the banner and "SECURO IS READY" once the API answers through nginx, so
+# the user knows the first start with its migrations has finished.
+
+flag=/run/securo/ready.printed
+if [ -f "$flag" ]; then
+    exec sleep infinity
+fi
+
+# The backend is asked directly while it migrates, since every refused attempt
+# through nginx would leave an error line in the log.
+ready=0
+for _ in $(seq 1 300); do
+    if curl -fsS -o /dev/null http://127.0.0.1:8000/api/health 2>/dev/null; then
+        curl -fsS -o /dev/null http://127.0.0.1:8080/api/health && ready=1
+        break
+    fi
+    sleep 2
+done
+
+print-banner.sh "Securo" "${SECURO_VERSION}"
+
+if [ "$ready" -eq 1 ]; then
+    printf '  \033[0;32m✓ SECURO IS READY\033[0m: the web app is on port 8080\n\n'
+else
+    printf '  \033[0;31m✗ SECURO DID NOT BECOME READY\033[0m: /api/health never answered within 10 min, check the log above\n\n'
+fi
+
+: > "$flag"
+exec sleep infinity

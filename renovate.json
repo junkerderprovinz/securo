@@ -1,0 +1,62 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    ":enableVulnerabilityAlertsWithLabel(security)"
+  ],
+  "timezone": "Europe/Vienna",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prHourlyLimit": 4,
+  "prConcurrentLimit": 6,
+  "packageRules": [
+    {
+      "description": "GitHub Actions: auto-merge minor, patch and digest updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "automerge": true,
+      "automergeType": "branch",
+      "commitMessagePrefix": "ci:",
+      "labels": ["github-actions"]
+    },
+    {
+      "description": "Securo upstream: every release runs migrations, so it gets a release of its own here",
+      "matchPackageNames": ["ghcr.io/securo-finance/securo-backend"],
+      "groupName": "Securo",
+      "commitMessageTopic": "Securo",
+      "commitMessagePrefix": "feat:",
+      "labels": ["upstream-bump"]
+    },
+    {
+      "description": "s6-overlay: auto-merge minor and patch",
+      "matchPackageNames": ["just-containers/s6-overlay"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "branch",
+      "commitMessagePrefix": "chore:",
+      "labels": ["build-tool"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Backend and frontend share ARG SECURO_VERSION; the backend image stands for both",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["ARG SECURO_VERSION=(?<currentValue>[^\\s]+)"],
+      "depNameTemplate": "ghcr.io/securo-finance/securo-backend",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Track s6-overlay version from ARG S6_OVERLAY_VERSION=<tag>",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["ARG S6_OVERLAY_VERSION=(?<currentValue>[^\\s]+)"],
+      "depNameTemplate": "just-containers/s6-overlay",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    }
+  ]
+}
