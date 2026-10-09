@@ -22,10 +22,6 @@ The <b>Securo</b> personal finance manager on Unraid, from a single template. It
 and Redis you already run, or brings its own when you have none.
 </p>
 
-<p align="center">
-  <a href="https://github.com/junkerderprovinz/securo/issues/new/choose"><img src=".github/assets/in-development.png" alt="In development, testers welcome: report a bug" width="100%"></a>
-</p>
-
 <br>
 
 <!-- download-buttons: written by scripts/gen_download_buttons.py -->

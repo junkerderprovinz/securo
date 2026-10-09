@@ -32,7 +32,7 @@ const bbox = (svg) => new Resvg(svg, { fitTo: { mode: "original" } }).getBBox();
 const W = 1600, H = 500, LOGO_INK = 400, LOGO_X = 165, GAP_LOGO_TEXT = 70, GAP_NAME_CLAIM = 16, CLAIM_CAP = 44, RIGHT_PAD = 120;
 // fitClaim shrinks the claim as it gets wider, so a long sentence ends up at
 // 29px instead of 44px and looks lost next to the name. Keep it short.
-const NAME = "Securo", CLAIM = "Your finances. Your server.";
+const NAME = "Securo", CLAIM = "Your money. None of their business.";
 
 const iconSrc = readFileSync(join(HERE, "icon.svg"), "utf8");
 const iconInner = iconSrc.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
