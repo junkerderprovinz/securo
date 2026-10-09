@@ -1,0 +1,12 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+# The built-in PostgreSQL, started only with BUILTIN_POSTGRES=true.
+
+if [ "${BUILTIN_POSTGRES}" != true ]; then
+    s6-svc -O .
+    exit 0
+fi
+
+exec gosu postgres postgres -D /data/postgres \
+    -c listen_addresses=127.0.0.1 \
+    -c unix_socket_directories=/run/postgresql

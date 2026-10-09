@@ -1,0 +1,6 @@
+.git/
+.notes/
+README.md
+LICENSE
+*.env
+data/

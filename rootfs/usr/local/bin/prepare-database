@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Waits for PostgreSQL, creates the database if it is missing and makes sure
+pgvector is there, so that a setup mistake ends in one readable line instead of
+an Alembic traceback."""
+
+import asyncio
+import os
+import sys
+import time
+
+import asyncpg
+from sqlalchemy.engine import make_url
+
+WAIT_SECONDS = 300
+
+url = make_url(os.environ["DATABASE_URL"])
+server = dict(host=url.host, port=url.port or 5432, user=url.username, password=url.password)
+where = f"{url.username}@{url.host}:{url.port or 5432}"
+
+
+def stop(message: str) -> None:
+    print(f"[database] ERROR: {message}", file=sys.stderr, flush=True)
+    sys.exit(1)
+
+
+async def connect(database: str) -> asyncpg.Connection:
+    deadline = time.monotonic() + WAIT_SECONDS
+    reported = 0.0
+    while True:
+        try:
+            return await asyncpg.connect(database=database, timeout=10, **server)
+        except (OSError, asyncio.TimeoutError, asyncpg.CannotConnectNowError) as exc:
+            if time.monotonic() > deadline:
+                stop(f"PostgreSQL at {where} did not answer within {WAIT_SECONDS}s: {exc}")
+            if time.monotonic() - reported > 15:
+                print(f"[database] Waiting for PostgreSQL at {where} ...", flush=True)
+                reported = time.monotonic()
+            await asyncio.sleep(2)
+
+
+async def create_database() -> None:
+    conn = await connect("postgres")
+    try:
+        await conn.execute(f'CREATE DATABASE "{url.database}"')
+    except asyncpg.InsufficientPrivilegeError:
+        stop(
+            f'Database "{url.database}" does not exist and {url.username} may not create it. '
+            f'Run CREATE DATABASE "{url.database}" OWNER "{url.username}"; on {url.host} as a superuser.'
+        )
+    finally:
+        await conn.close()
+    print(f'[database] Created database "{url.database}" on {url.host}.', flush=True)
+
+
+async def main() -> None:
+    try:
+        conn = await connect(url.database)
+    except asyncpg.InvalidCatalogNameError:
+        await create_database()
+        conn = await connect(url.database)
+    except asyncpg.InvalidPasswordError:
+        stop(f"PostgreSQL at {where} rejected the password.")
+    except asyncpg.InvalidAuthorizationSpecificationError as exc:
+        stop(f"PostgreSQL at {where} refused the login: {exc}")
+
+    try:
+        row = await conn.fetchrow(
+            "SELECT installed_version FROM pg_available_extensions WHERE name = 'vector'"
+        )
+        if row is None:
+            stop(
+                f"PostgreSQL at {url.host} has no pgvector, which Securo needs. Use an image that "
+                "ships it, such as pgvector/pgvector:pg16, or set BUILTIN_POSTGRES=true."
+            )
+        if row["installed_version"] is None:
+            try:
+                await conn.execute("CREATE EXTENSION vector")
+            except asyncpg.InsufficientPrivilegeError:
+                stop(
+                    f"{url.username} may not enable pgvector. Run CREATE EXTENSION vector; "
+                    f'in database "{url.database}" on {url.host} as a superuser.'
+                )
+            print(f'[database] Enabled pgvector in "{url.database}".', flush=True)
+    finally:
+        await conn.close()
+
+
+asyncio.run(main())

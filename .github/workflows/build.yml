@@ -1,0 +1,257 @@
+name: Build & Push
+
+# Builds the image, smoke-tests it and pushes it to GHCR, and to Docker Hub once
+# the DOCKERHUB_USERNAME variable and the DOCKERHUB_TOKEN secret are both set.
+#
+# Tags:
+#   * Tag vX.Y.Z           -> X.Y.Z, X.Y, and latest if it is the highest version tag
+#   * Push to main         -> edge, sha-<short>
+#   * Push to other branch -> <branch> on GHCR only, for testing
+
+on:
+  push:
+    branches: [ '**', '!renovate/**' ]
+    tags: [ 'v*.*.*' ]
+    paths-ignore: [ '**.md', 'LICENSE', '.github/assets/**', 'scripts/**' ]
+  workflow_dispatch:
+
+# Two quick pushes to a branch race for its tag, so the older run is cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ (github.ref_type == 'branch' && github.ref != 'refs/heads/main') && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+env:
+  IMAGE_NAME: securo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+
+      - name: Build image for the smoke test
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: securo:smoke
+          cache-from: type=gha
+
+      - name: Write the smoke test helpers
+        run: |
+          cat > /tmp/smoke.sh <<'EOF'
+          set -euo pipefail
+          wait_health() {
+            for i in $(seq 1 120); do
+              curl -fsS -o /dev/null "http://127.0.0.1:$2/api/health" 2>/dev/null && return 0
+              [ "$(docker inspect -f '{{.State.Status}}' "$1")" = running ] \
+                || { echo "::error::$1 stopped"; docker logs "$1" 2>&1 | tail -60; return 1; }
+              sleep 2
+            done
+            echo "::error::$1 never answered /api/health"
+            docker logs "$1" 2>&1 | tail -60
+            return 1
+          }
+          token() {
+            curl -fsS -X POST -d 'username=smoke@example.com&password=Smoke-Test-2026!' \
+              "http://127.0.0.1:$1/api/auth/login" | jq -r .access_token
+          }
+          register_and_add_account() {
+            curl -fsS -X POST -H 'Content-Type: application/json' \
+              -d '{"email":"smoke@example.com","password":"Smoke-Test-2026!"}' \
+              "http://127.0.0.1:$1/api/auth/register" >/dev/null
+            curl -fsS -X POST -H "Authorization: Bearer $(token "$1")" -H 'Content-Type: application/json' \
+              -d '{"name":"Smoke checking","type":"checking","balance":"1.00","currency":"EUR"}' \
+              "http://127.0.0.1:$1/api/accounts" >/dev/null
+          }
+          has_account() {
+            curl -fsS -H "Authorization: Bearer $(token "$1")" "http://127.0.0.1:$1/api/accounts" \
+              | jq -e 'map(.name) | index("Smoke checking")' >/dev/null
+          }
+          EOF
+
+      # The promise of the image is a working Securo from one container with
+      # nothing else running, so the test starts it like that, signs up, stores
+      # an account, restarts it and finds the account again.
+      - name: "Smoke test: built-in PostgreSQL and Redis, round trip, restart"
+        run: |
+          . /tmp/smoke.sh
+          DATA="$(mktemp -d)"
+          trap 'docker rm -f securo-builtin >/dev/null 2>&1 || true' EXIT
+          docker run -d --name securo-builtin -p 8081:8080 -v "${DATA}:/data" \
+            -e BUILTIN_POSTGRES=true -e BUILTIN_REDIS=true securo:smoke
+          wait_health securo-builtin 8081
+          register_and_add_account 8081
+          docker restart securo-builtin >/dev/null
+          wait_health securo-builtin 8081
+          has_account 8081 || { echo "::error::The account is gone after a restart"; exit 1; }
+          [ -z "$(sudo find "${DATA}" -mindepth 1 -maxdepth 1 ! -name secrets.env ! -user 99)" ] \
+            || { sudo ls -ln "${DATA}"; echo "::error::Not everything in /data belongs to PUID 99"; exit 1; }
+          for i in $(seq 1 30); do
+            grep -q 'SECURO IS READY' <<< "$(docker logs securo-builtin 2>&1)" && break
+            sleep 1
+          done
+          docker logs securo-builtin > /tmp/builtin.log 2>&1
+          grep -q 'SECURO IS READY' /tmp/builtin.log || { echo "::error::No ready line in the log"; exit 1; }
+          if grep -q 'connect() failed.*client: 127.0.0.1' /tmp/builtin.log; then
+            echo "::error::The ready check went through nginx before the backend was up"
+            exit 1
+          fi
+
+      # The default setup: the PostgreSQL and Redis the user already runs, with no
+      # securo database yet and a Redis password that needs encoding in the URL.
+      - name: "Smoke test: external PostgreSQL with pgvector and Redis with a password"
+        run: |
+          . /tmp/smoke.sh
+          trap 'docker rm -f securo-ext ext-pg ext-redis >/dev/null 2>&1 || true' EXIT
+          docker network create ext
+          docker run -d --name ext-pg --network ext \
+            -e POSTGRES_USER=admin -e 'POSTGRES_PASSWORD=pg pass!x' pgvector/pgvector:pg16
+          docker run -d --name ext-redis --network ext redis:8-alpine redis-server --requirepass 'r/p@ss#1'
+          for i in $(seq 1 30); do docker exec ext-pg pg_isready -U admin >/dev/null 2>&1 && break; sleep 1; done
+          docker run -d --name securo-ext --network ext -p 8082:8080 \
+            -e POSTGRES_HOST=ext-pg -e POSTGRES_USER=admin -e 'POSTGRES_PASSWORD=pg pass!x' \
+            -e REDIS_HOST=ext-redis -e 'REDIS_PASSWORD=r/p@ss#1' -e REDIS_DB=3 securo:smoke
+          wait_health securo-ext 8082
+          register_and_add_account 8082
+          has_account 8082
+          grep -q 'Created database "securo"' <<< "$(docker logs securo-ext 2>&1)" \
+            || { echo "::error::The securo database was not created"; exit 1; }
+          if docker exec securo-ext sh -c 'pgrep -x postgres || pgrep -x redis-server' >/dev/null; then
+            echo "::error::A built-in service runs although it is switched off"
+            exit 1
+          fi
+
+      - name: "Smoke test: a PostgreSQL without pgvector gets one clear line"
+        run: |
+          trap 'docker rm -f securo-novector plain-pg >/dev/null 2>&1 || true' EXIT
+          docker network create plain
+          docker run -d --name plain-pg --network plain -e POSTGRES_PASSWORD=plain postgres:16-alpine
+          for i in $(seq 1 30); do docker exec plain-pg pg_isready -U postgres >/dev/null 2>&1 && break; sleep 1; done
+          docker run -d --name securo-novector --network plain \
+            -e POSTGRES_HOST=plain-pg -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=plain \
+            -e BUILTIN_REDIS=true securo:smoke
+          for i in $(seq 1 60); do
+            grep -q 'has no pgvector' <<< "$(docker logs securo-novector 2>&1)" && exit 0
+            sleep 1
+          done
+          docker logs securo-novector 2>&1 | tail -40
+          echo "::error::No message for a PostgreSQL without pgvector"
+          exit 1
+
+      - name: "Smoke test: a missing database host stops the start with one clear line"
+        run: |
+          docker run --name securo-nohost securo:smoke > /tmp/nohost.log 2>&1 || true
+          docker rm -f securo-nohost >/dev/null 2>&1 || true
+          grep -q 'POSTGRES_HOST is empty' /tmp/nohost.log \
+            || { cat /tmp/nohost.log; echo "::error::No message for a missing database host"; exit 1; }
+
+      # Report-only, so a finding never blocks the build; results land in the
+      # repository's Security tab.
+      - name: Scan image for CVEs (Trivy)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: securo:smoke
+          format: sarif
+          output: trivy.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Upload Trivy results to the Security tab
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+
+      # latest goes only to the highest version tag, so recutting an old tag
+      # cannot move it backwards.
+      - name: Is this the highest version tag?
+        id: highest
+        run: |
+          top="$(git tag -l 'v[0-9]*' | sort -V | tail -1)"
+          if [ "${GITHUB_REF_TYPE}" = tag ] && [ "${GITHUB_REF_NAME}" = "${top}" ]; then
+            echo "latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "latest=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Login to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        if: ${{ vars.DOCKERHUB_USERNAME != '' && (github.ref_type == 'tag' || github.ref == 'refs/heads/main') }}
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+            name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' && (github.ref_type == 'tag' || github.ref == 'refs/heads/main') }}
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ steps.highest.outputs.latest }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,format=short,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && !contains(fromJSON('["latest","edge"]'), github.ref_name) }}
+
+      - name: Push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: true
+          sbom: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Mirror the README to the Docker Hub description on releases. Skipped until
+  # DOCKERHUB_TOKEN is set.
+  dockerhub-description:
+    needs: build
+    if: ${{ vars.DOCKERHUB_USERNAME != '' && github.ref_type == 'tag' }}
+    # A cosmetic sync; a refused credential here must not fail the published image.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Sync README to Docker Hub
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          short-description: "Securo personal finance manager for Unraid in one container, with optional built-in PostgreSQL and Redis."
+          enable-url-completion: true

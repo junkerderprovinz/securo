@@ -1,0 +1,43 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hadolint:
+    name: Hadolint (Dockerfile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+
+  shellcheck:
+    name: ShellCheck (init and service scripts)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Run shellcheck
+        run: |
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y shellcheck
+          shellcheck -S warning rootfs/etc/cont-init.d/*.sh rootfs/etc/services.d/*/run rootfs/usr/local/bin/print-banner.sh
+
+  python:
+    name: Python (prepare-database)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Compile
+        run: python3 -m py_compile rootfs/usr/local/bin/prepare-database
