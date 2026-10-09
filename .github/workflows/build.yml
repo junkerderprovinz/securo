@@ -110,7 +110,9 @@ jobs:
           done
           docker logs securo-builtin > /tmp/builtin.log 2>&1
           grep -q 'SECURO IS READY' /tmp/builtin.log || { echo "::error::No ready line in the log"; exit 1; }
-          if grep -q 'connect() failed.*client: 127.0.0.1' /tmp/builtin.log; then
+          # The test's own requests on 8081 may hit nginx while the backend migrates;
+          # only the ready check asks for host 127.0.0.1:8080.
+          if grep -q 'connect() failed.*host: "127.0.0.1:8080"' /tmp/builtin.log; then
             echo "::error::The ready check went through nginx before the backend was up"
             exit 1
           fi
