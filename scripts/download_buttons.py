@@ -11,9 +11,8 @@ BUTTONS = {
     # Community Applications has not listed the template yet, so the button is
     # drawn without a link. Its app page goes here once it exists.
     "unraid": None,
-    # A browser cannot download an image, so this opens its Docker Hub page,
-    # which carries the pull command and every tag.
-    "docker": "https://hub.docker.com/r/junkerderprovinz/securo/",
+    "mos": "https://mos-official.net/apps.html?search=Securo",
+    "compose": "https://raw.githubusercontent.com/junkerderprovinz/securo/main/compose.yaml",
     # A release's "Source code (zip)" is the whole repository at that tag, and
     # GitHub gives the newest one no fixed address, so this leads to the release
     # that lists it.
