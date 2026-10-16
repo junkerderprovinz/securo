@@ -1,0 +1,33 @@
+# Built from the Unraid template in junkerderprovinz/unraid-apps by
+# .github/gen-compose.py. Change the template there, not this file.
+#
+# Folders are created next to this file on the first start. Point the ones
+# that hold your own files (downloads, storage and the like) at real folders
+# first, and fill in every value marked "required".
+
+services:
+  securo:
+    image: junkerderprovinz/securo:latest
+    container_name: securo
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - "./appdata:/data"
+    environment:
+      BUILTIN_POSTGRES: "true"
+      POSTGRES_USER: postgres
+      BUILTIN_REDIS: "true"
+      REGISTRATION_ENABLED: "true"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: securo
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+      TRUSTED_PROXY_HOPS: "1"
+      SIMPLEFIN_ENABLED: "false"
+      SIMPLEFIN_API_URL: "https://beta-bridge.simplefin.org"
+      OIDC_ENABLED: "false"
+      OIDC_PROVIDER_NAME: OIDC
+      LOCAL_AUTH_ENABLED: "true"
+      PUID: "1000"
+      PGID: "1000"

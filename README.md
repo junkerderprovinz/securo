@@ -127,6 +127,14 @@ A few things worth knowing:
 - **Behind a reverse proxy,** set **Trusted proxies** to `2`, so the login rate limit counts each visitor on its own instead of all of them as your proxy.
 - **Backups:** with the built-in database, stop the container and copy the appdata folder. With your own PostgreSQL, back up the `securo` database the way you back up the others.
 
+### Other Docker hosts
+
+[compose.yaml](compose.yaml) runs Securo on any Linux server with Docker. Put it in a folder of its own and start it with `docker compose up -d`. The folders are created next to the file.
+
+- **Synology:** in Container Manager, create a project from the file (DSM 7.2 or newer).
+- **Proxmox:** run it in a VM or an LXC container that has Docker.
+- **MOS:** install Securo from the [MOS Hub](https://mos-official.net/apps.html?search=Securo).
+
 <br>
 
 ## 4. Bank sync and single sign-on
