@@ -9,7 +9,7 @@
 
 # The component versions live only here, where Renovate bumps them. Backend and
 # frontend are released together upstream and share the version.
-ARG SECURO_VERSION=0.16.5
+ARG SECURO_VERSION=0.16.6
 ARG POSTGRES_MAJOR=16
 ARG S6_OVERLAY_VERSION=3.2.0.2
 
