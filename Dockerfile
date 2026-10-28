@@ -65,17 +65,23 @@ RUN apt-get update \
     && rm -f /etc/nginx/sites-enabled/default \
     && rm -rf /var/lib/apt/lists/*
 
-# The base image ships PyJWT, certifi, urllib3 and pip at versions with open
-# advisories. --no-deps keeps pip away from everything else in site-packages.
+# The base image ships PyJWT, certifi, urllib3, pypdf, dnspython and pip at
+# versions with open advisories. --no-deps keeps pip away from everything else
+# in site-packages.
 # renovate: datasource=pypi depName=PyJWT
 ARG PYJWT_VERSION=2.15.1
 # renovate: datasource=pypi depName=certifi
 ARG CERTIFI_VERSION=2026.10.23
 # renovate: datasource=pypi depName=urllib3
 ARG URLLIB3_VERSION=2.8.0
+# renovate: datasource=pypi depName=pypdf
+ARG PYPDF_VERSION=6.21.4
+# renovate: datasource=pypi depName=dnspython
+ARG DNSPYTHON_VERSION=2.9.0
 # renovate: datasource=pypi depName=pip
 ARG PIP_VERSION=26.2.2
-RUN pip install --no-cache-dir --no-deps "pip==${PIP_VERSION}" "PyJWT==${PYJWT_VERSION}" "certifi==${CERTIFI_VERSION}" "urllib3==${URLLIB3_VERSION}"
+RUN pip install --no-cache-dir --no-deps "pip==${PIP_VERSION}" "PyJWT==${PYJWT_VERSION}" "certifi==${CERTIFI_VERSION}" \
+        "urllib3==${URLLIB3_VERSION}" "pypdf==${PYPDF_VERSION}" "dnspython==${DNSPYTHON_VERSION}"
 
 ENV PATH="/usr/lib/postgresql/${POSTGRES_MAJOR}/bin:${PATH}"
 
