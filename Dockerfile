@@ -9,14 +9,14 @@
 
 # The component versions live only here, where Renovate bumps them. Backend and
 # frontend are released together upstream and share the version.
-ARG SECURO_VERSION=0.16.5
+ARG SECURO_VERSION=0.16.6
 ARG POSTGRES_MAJOR=16
 ARG S6_OVERLAY_VERSION=3.2.0.2
 
 ARG SECURO_VERSION
 FROM ghcr.io/securo-finance/securo-frontend:${SECURO_VERSION} AS frontend
 
-FROM tianon/gosu:1.20@sha256:b2d30a61e8f27a96f7fce6658bedc96b2af37927be8ed49c502f399c121e9953 AS gosu
+FROM tianon/gosu:1.20@sha256:572913c67c6b58baea3e5572fc10e4b42914463d8e8b3ab8e3fed077394c807f AS gosu
 
 ARG SECURO_VERSION
 FROM ghcr.io/securo-finance/securo-backend:${SECURO_VERSION}
