@@ -77,11 +77,11 @@ ARG URLLIB3_VERSION=2.8.0
 # renovate: datasource=pypi depName=pypdf
 ARG PYPDF_VERSION=6.21.4
 # renovate: datasource=pypi depName=dnspython
-ARG DNSPYTHON_VERSION=2.9.1
+ARG DNSPYTHON_VERSION=2.9.2
 # renovate: datasource=pypi depName=pyasn1
 ARG PYASN1_VERSION=0.6.5
 # renovate: datasource=pypi depName=pip
-ARG PIP_VERSION=26.2.2
+ARG PIP_VERSION=26.3
 RUN pip install --no-cache-dir --no-deps "pip==${PIP_VERSION}" "PyJWT==${PYJWT_VERSION}" "certifi==${CERTIFI_VERSION}" \
         "urllib3==${URLLIB3_VERSION}" "pypdf==${PYPDF_VERSION}" "dnspython==${DNSPYTHON_VERSION}" \
         "pyasn1==${PYASN1_VERSION}"
