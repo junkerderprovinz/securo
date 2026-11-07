@@ -24,27 +24,43 @@ and Redis you already run, or brings its own when you have none.
 
 <br>
 
+<p><a id="table-of-contents" href="#table-of-contents"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/table-of-contents-dark.svg"><img src=".github/assets/sections/table-of-contents.svg" alt="Table of Contents" width="100%"></picture></a></p>
+
+1. [Download](#1-download)
+2. [Support](#2-support)
+3. [What it looks like](#3-what-it-looks-like)
+4. [What it does](#4-what-it-does)
+5. [Getting started](#5-getting-started)
+6. [Bank sync and single sign-on](#6-bank-sync-and-single-sign-on)
+7. [How AI is used here](#7-how-ai-is-used-here)
+
+<br>
+
+<p><a id="1-download" href="#1-download"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/1-download-dark.svg"><img src=".github/assets/sections/1-download.svg" alt="1. Download" width="100%"></picture></a></p>
+
 <!-- download-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(0,0,841.9,245.3))" alt="Server" width="160" height="46.618">
+  <picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/group-server-dark.svg"><img src=".github/assets/sections/group-server.svg" alt="Server" width="100%"></picture>
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(866,0,841.9,245.3))" alt="In Unraid&#x27;s Community Applications soon" width="160" height="46.618">
+  <img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(0,0,841.9,245.3))" alt="In Unraid&#x27;s Community Applications soon" width="160" height="46.618">
   &nbsp;
-  <a href="https://mos-official.net/apps.html?search=Securo"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
+  <a href="https://mos-official.net/apps.html?search=Securo"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(866,0,841.9,245.3))" alt="Install from the MOS Hub" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/zimaos-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(1732,0,841.9,245.3))" alt="Install from the ZimaOS and CasaOS store" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(3464,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/umbrel-apps#install"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(2598,0,841.9,245.3))" alt="Install from the umbrelOS community app store" width="160" height="46.618"></a>
 </p>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/junkerderprovinz/securo/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(4330,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
+  <a href="https://raw.githubusercontent.com/junkerderprovinz/securo/main/compose.yaml"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(3464,0,841.9,245.3))" alt="Download the docker-compose file" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://github.com/junkerderprovinz/securo/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(5196,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
+  <a href="https://github.com/junkerderprovinz/securo/releases/latest"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(4330,0,841.9,245.3))" alt="Download the source archive" width="160" height="46.618"></a>
 </p>
 <!-- /download-buttons -->
 
 <br>
+
+<p><a id="2-support" href="#2-support"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/2-support-dark.svg"><img src=".github/assets/sections/2-support.svg" alt="2. Support" width="100%"></picture></a></p>
 
 <p align="center">
 A one-knight job: I build it, keep it running, work through the issues and add what people ask for, until nothing is missing. It is free, with no accounts, no telemetry, no ads and no paid tier. No asterisk anywhere. Nothing readable ever leaves your own walls. Forged on evenings and weekends, with heart and stubbornness.
@@ -56,28 +72,17 @@ If it has earned a place on your server or computer, toss a coin to your knight:
 
 <!-- give-buttons: written by scripts/gen_download_buttons.py -->
 <p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(6062,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
+  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(5196,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(6928,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
+  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(6062,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
   &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(7794,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
+  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=9fa0525392e7#svgView(viewBox(6928,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
 </p>
 <!-- /give-buttons -->
 
 <br>
 
-## Table of Contents
-
-1. [What it looks like](#1-what-it-looks-like)
-2. [What it does](#2-what-it-does)
-3. [Getting started](#3-getting-started)
-4. [Bank sync and single sign-on](#4-bank-sync-and-single-sign-on)
-5. [How AI is used here](#5-how-ai-is-used-here)
-6. [Support this project](#6-support-this-project)
-
-<br>
-
-## 1. What it looks like
+<p><a id="3-what-it-looks-like" href="#3-what-it-looks-like"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/3-what-it-looks-like-dark.svg"><img src=".github/assets/sections/3-what-it-looks-like.svg" alt="3. What it looks like" width="100%"></picture></a></p>
 
 The accounts and amounts in these pictures are made up.
 
@@ -95,7 +100,7 @@ The accounts and amounts in these pictures are made up.
 
 <br>
 
-## 2. What it does
+<p><a id="4-what-it-does" href="#4-what-it-does"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/4-what-it-does-dark.svg"><img src=".github/assets/sections/4-what-it-does.svg" alt="4. What it does" width="100%"></picture></a></p>
 
 [Securo](https://github.com/securo-finance/securo) is a self-hosted finance manager: accounts, transactions, budgets, goals, assets and reports, with imports from OFX, QIF, CAMT and CSV and optional bank sync. Upstream ships it as six containers in a compose file. This image puts them into one, built from the official backend and frontend images:
 
@@ -108,7 +113,7 @@ The accounts and amounts in these pictures are made up.
 
 <br>
 
-## 3. Getting started
+<p><a id="5-getting-started" href="#5-getting-started"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/5-getting-started-dark.svg"><img src=".github/assets/sections/5-getting-started.svg" alt="5. Getting started" width="100%"></picture></a></p>
 
 1. Install **Securo** from Community Applications.
 2. Pick your databases:
@@ -149,7 +154,7 @@ A few things worth knowing:
 
 <br>
 
-## 4. Bank sync and single sign-on
+<p><a id="6-bank-sync-and-single-sign-on" href="#6-bank-sync-and-single-sign-on"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/6-bank-sync-and-single-sign-on-dark.svg"><img src=".github/assets/sections/6-bank-sync-and-single-sign-on.svg" alt="6. Bank sync and single sign-on" width="100%"></picture></a></p>
 
 All of this stays off until you fill in the fields. Each provider switches itself on once its credentials are present.
 
@@ -164,7 +169,7 @@ Every other setting from upstream's [`.env.example`](https://github.com/securo-f
 
 <br>
 
-## 5. How AI is used here
+<p><a id="7-how-ai-is-used-here" href="#7-how-ai-is-used-here"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/sections/7-how-ai-is-used-here-dark.svg"><img src=".github/assets/sections/7-how-ai-is-used-here.svg" alt="7. How AI is used here" width="100%"></picture></a></p>
 
 One knight builds this, and AI is one of the tools I work with, the same way I work with an editor or a compiler. It helps me write code and documentation and it checks my work, and that saves me a good many evenings. It does not make the decisions, though. I read and understand everything before it ships, and if something here breaks, that is on me and not on the tool.
 
@@ -172,23 +177,7 @@ You do not have to take my word for it. The code is open and every release note 
 
 <br>
 
-## 6. Support this project
-
 Questions, bugs, ideas or feature requests? Please [open a GitHub issue](https://github.com/junkerderprovinz/securo/issues). Problems with Securo itself, the app rather than the container, are best reported [upstream](https://github.com/securo-finance/securo/issues).
-
-A one-knight job: I build it, keep it running, work through the issues and add what people ask for, until nothing is missing. It is free, with no accounts, no telemetry, no ads and no paid tier. No asterisk anywhere. Nothing readable ever leaves your own walls. Forged on evenings and weekends, with heart and stubbornness.
-
-If it has earned a place on your server or computer, toss a coin to your knight: it helps cover the costs and keeps the project alive. It also makes this knight's heart beat a little faster. Three ways below, whichever suits you.
-
-<!-- give-buttons: written by scripts/gen_download_buttons.py -->
-<p align="center">
-  <a href="https://buymeacoffee.com/junkerderprovinz"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(6062,0,841.9,245.3))" alt="Buy me a coffee" width="160" height="46.618"></a>
-  &nbsp;
-  <a href="https://www.paypal.com/donate/?hosted_button_id=76FVV52TKXTUS"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(6928,0,841.9,245.3))" alt="PayPal" width="160" height="46.618"></a>
-  &nbsp;
-  <a href="https://junkerderprovinz.github.io/junkerderprovinz/"><img src="https://raw.githubusercontent.com/junkerderprovinz/securo/main/.github/assets/download-buttons/buttons.svg?v=8eb9df2ae3a0#svgView(viewBox(7794,0,841.9,245.3))" alt="Donate with crypto" width="160" height="46.618"></a>
-</p>
-<!-- /give-buttons -->
 
 <br>
 
