@@ -7,12 +7,17 @@ name: Build & Push
 #   * Tag vX.Y.Z           -> X.Y.Z, X.Y, and latest if it is the highest version tag
 #   * Push to main         -> edge, sha-<short>
 #   * Push to other branch -> <branch> on GHCR only, for testing
+#   * Weekly cron and manual workflow_dispatch -> the newest release rebuilt
+#     without the layer cache, under its version tags and latest
 
 on:
   push:
     branches: [ '**', '!renovate/**' ]
     tags: [ 'v*.*.*' ]
     paths-ignore: [ '**.md', 'LICENSE', '.github/assets/**', 'scripts/**' ]
+  # Weekly, to rebuild the newest release on fresh base images and packages.
+  schedule:
+    - cron: '0 6 * * 0'
   workflow_dispatch:
 
 # Two quick pushes to a branch race for its tag, so the older run is cancelled.
@@ -29,13 +34,35 @@ env:
   IMAGE_NAME: securo
 
 jobs:
+  # Rebuilds refresh the newest release, which is what people run, not the
+  # tip of main.
+  release:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.newest.outputs.tag }}
+    steps:
+      - name: Find the newest release
+        id: newest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          echo "rebuilding $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: release
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          ref: ${{ needs.release.outputs.tag }}
           fetch-depth: 0
 
       - name: Set up QEMU
@@ -53,6 +80,7 @@ jobs:
           load: true
           tags: securo:smoke
           cache-from: type=gha
+          no-cache: ${{ needs.release.outputs.tag != '' }}
 
       - name: Write the smoke test helpers
         run: |
@@ -184,7 +212,7 @@ jobs:
           category: trivy
 
       # latest goes only to the highest version tag, so recutting an old tag
-      # cannot move it backwards.
+      # cannot move it backwards, and to a rebuild of the newest release.
       - name: Is this the highest version tag?
         id: highest
         run: |
@@ -218,12 +246,12 @@ jobs:
             name=docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }},enable=${{ vars.DOCKERHUB_USERNAME != '' && (github.ref_type == 'tag' || github.ref == 'refs/heads/main') }}
           flavor: latest=false
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ steps.highest.outputs.latest }}
-            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha,format=short,enable=${{ github.ref == 'refs/heads/main' }}
-            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && !contains(fromJSON('["latest","edge"]'), github.ref_name) }}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.tag }}
+            type=raw,value=latest,enable=${{ steps.highest.outputs.latest == 'true' || needs.release.outputs.tag != '' }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
+            type=sha,format=short,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
+            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && !contains(fromJSON('["latest","edge"]'), github.ref_name) && needs.release.outputs.tag == '' }}
 
       - name: Push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
@@ -237,12 +265,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          no-cache: ${{ needs.release.outputs.tag != '' }}
 
   # Mirror the README to the Docker Hub description on releases. Skipped until
   # DOCKERHUB_TOKEN is set.
   dockerhub-description:
     needs: build
-    if: ${{ vars.DOCKERHUB_USERNAME != '' && github.ref_type == 'tag' }}
+    if: ${{ !failure() && !cancelled() && vars.DOCKERHUB_USERNAME != '' && github.ref_type == 'tag' }}
     # A cosmetic sync; a refused credential here must not fail the published image.
     continue-on-error: true
     runs-on: ubuntu-latest
