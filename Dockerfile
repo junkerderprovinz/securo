@@ -9,7 +9,7 @@
 
 # The component versions live only here, where Renovate bumps them. Backend and
 # frontend are released together upstream and share the version.
-ARG SECURO_VERSION=0.17.0
+ARG SECURO_VERSION=0.18.0
 ARG POSTGRES_MAJOR=16
 ARG S6_OVERLAY_VERSION=3.2.0.2
 
@@ -75,7 +75,7 @@ ARG CERTIFI_VERSION=2026.10.23
 # renovate: datasource=pypi depName=urllib3
 ARG URLLIB3_VERSION=2.8.0
 # renovate: datasource=pypi depName=pypdf
-ARG PYPDF_VERSION=6.21.4
+ARG PYPDF_VERSION=7.0.0
 # renovate: datasource=pypi depName=dnspython
 ARG DNSPYTHON_VERSION=2.9.2
 # renovate: datasource=pypi depName=pyasn1
