@@ -24,7 +24,7 @@
     },
     {
       "description": "Securo upstream: every release runs migrations, so it gets a release of its own here",
-      "matchPackageNames": ["ghcr.io/securo-finance/securo-backend"],
+      "matchPackageNames": ["ghcr.io/securo-finance/securo-backend", "ghcr.io/securo-finance/securo-frontend"],
       "groupName": "Securo",
       "commitMessageTopic": "Securo",
       "commitMessagePrefix": "feat:",
