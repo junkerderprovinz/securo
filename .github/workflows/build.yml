@@ -43,6 +43,7 @@ jobs:
       contents: read
     outputs:
       tag: ${{ steps.newest.outputs.tag }}
+      sha: ${{ steps.newest.outputs.sha }}
     steps:
       - name: Find the newest release
         id: newest
@@ -52,6 +53,7 @@ jobs:
           tag=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
           echo "rebuilding $tag"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha)" >> "$GITHUB_OUTPUT"
 
   build:
     needs: release
@@ -252,6 +254,9 @@ jobs:
             type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
             type=sha,format=short,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
             type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && !contains(fromJSON('["latest","edge"]'), github.ref_name) && needs.release.outputs.tag == '' }}
+          # A rebuild of the newest release carries the release's commit, not main's.
+          labels: |
+            ${{ needs.release.outputs.tag != '' && format('org.opencontainers.image.revision={0}', needs.release.outputs.sha) || '' }}
 
       - name: Push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
