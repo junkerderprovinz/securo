@@ -165,7 +165,7 @@ All of this stays off until you fill in the fields. Each provider switches itsel
 | Brazilian banks | **Pluggy client ID** and **Pluggy client secret** | [dashboard.pluggy.ai](https://dashboard.pluggy.ai) |
 | Single sign-on | **OIDC** set to `true`, plus discovery URL, client ID and secret | Your provider, such as Authentik or Pocket ID. The redirect URI is your **App address** followed by `/api/auth/oidc/callback` |
 
-Every other setting from upstream's [`.env.example`](https://github.com/securo-finance/securo/blob/main/.env.example) works as a container variable with the same name. The optional AI agents are not part of this image yet.
+Every other setting from upstream's [`.env.example`](https://github.com/securo-finance/securo/blob/main/.env.example) works as a container variable with the same name, so `PLUGINS_ENABLED=true` opens the plugin catalog. Plugins with code and the optional AI agents need upstream's extra containers and are not part of this image yet.
 
 <br>
 
