@@ -42,12 +42,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # created with, and 16 is the one upstream's compose file runs. Debian's
 # postgresql-common would otherwise create a cluster under /var/lib right away.
 # The archives track security fixes within each series, so the versions are
-# left to them.
+# left to them. The upgrade takes the Debian fixes published since upstream
+# built the base image, libpq among them.
 # hadolint ignore=DL3008
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && install -d /usr/share/postgresql-common/pgdg /etc/postgresql-common/createcluster.d \
-    && curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+    && curl -fsSL --retry 3 --retry-all-errors -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
         https://www.postgresql.org/media/keys/ACCC4CF8.asc \
     && . /etc/os-release \
     && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
