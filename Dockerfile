@@ -67,9 +67,9 @@ RUN apt-get update \
     && rm -f /etc/nginx/sites-enabled/default \
     && rm -rf /var/lib/apt/lists/*
 
-# The base image ships PyJWT, certifi, urllib3, pypdf, dnspython, pyasn1 and pip at
-# versions with open advisories. --no-deps keeps pip away from everything else
-# in site-packages.
+# Packages the base image has shipped with open advisories are pinned to fixed
+# releases, which Renovate keeps current. --no-deps keeps pip away from
+# everything else in site-packages.
 # renovate: datasource=pypi depName=PyJWT
 ARG PYJWT_VERSION=2.15.1
 # renovate: datasource=pypi depName=certifi
@@ -82,11 +82,18 @@ ARG PYPDF_VERSION=7.1.0
 ARG DNSPYTHON_VERSION=2.9.2
 # renovate: datasource=pypi depName=pyasn1
 ARG PYASN1_VERSION=0.6.5
+# renovate: datasource=pypi depName=soupsieve
+ARG SOUPSIEVE_VERSION=4.1.1
+# renovate: datasource=pypi depName=pillow
+ARG PILLOW_VERSION=13.0.0
+# renovate: datasource=pypi depName=opentelemetry-api
+ARG OPENTELEMETRY_API_VERSION=1.45.2
 # renovate: datasource=pypi depName=pip
 ARG PIP_VERSION=26.3
 RUN pip install --no-cache-dir --no-deps "pip==${PIP_VERSION}" "PyJWT==${PYJWT_VERSION}" "certifi==${CERTIFI_VERSION}" \
         "urllib3==${URLLIB3_VERSION}" "pypdf==${PYPDF_VERSION}" "dnspython==${DNSPYTHON_VERSION}" \
-        "pyasn1==${PYASN1_VERSION}"
+        "pyasn1==${PYASN1_VERSION}" "soupsieve==${SOUPSIEVE_VERSION}" "pillow==${PILLOW_VERSION}" \
+        "opentelemetry-api==${OPENTELEMETRY_API_VERSION}"
 
 ENV PATH="/usr/lib/postgresql/${POSTGRES_MAJOR}/bin:${PATH}"
 
