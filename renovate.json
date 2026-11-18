@@ -23,7 +23,7 @@
       "labels": ["github-actions"]
     },
     {
-      "description": "Securo upstream: every release runs migrations, so it gets a release of its own here",
+      "description": "Securo upstream: review by hand, each release migrates the database",
       "matchPackageNames": ["ghcr.io/securo-finance/securo-backend", "ghcr.io/securo-finance/securo-frontend"],
       "groupName": "Securo",
       "commitMessageTopic": "Securo",
