@@ -15,6 +15,10 @@ on:
     branches: [ '**', '!renovate/**' ]
     tags: [ 'v*.*.*' ]
     paths-ignore: [ '**.md', 'LICENSE', '.github/assets/**', 'scripts/**' ]
+  # A pull request builds and smoke-tests the image but pushes nothing.
+  pull_request:
+    branches: [ main ]
+    paths-ignore: [ '**.md', 'LICENSE', '.github/assets/**', 'scripts/**' ]
   # Weekly, to rebuild the newest release on fresh base images and packages.
   schedule:
     - cron: '0 6 * * 0'
@@ -208,6 +212,7 @@ jobs:
           exit-code: "0"
 
       - name: Upload Trivy results to the Security tab
+        if: github.event_name != 'pull_request'
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           sarif_file: trivy.sarif
@@ -226,6 +231,7 @@ jobs:
           fi
 
       - name: Login to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           registry: ghcr.io
@@ -259,6 +265,7 @@ jobs:
             ${{ needs.release.outputs.tag != '' && format('org.opencontainers.image.revision={0}', needs.release.outputs.sha) || '' }}
 
       - name: Push
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
