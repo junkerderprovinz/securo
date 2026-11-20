@@ -9,8 +9,10 @@
 
 # The component versions live only here, where Renovate bumps them. Backend and
 # frontend are released together upstream and share the version.
+# renovate: datasource=docker depName=ghcr.io/securo-finance/securo-backend
 ARG SECURO_VERSION=0.20.0
 ARG POSTGRES_MAJOR=16
+# renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.0.2
 
 ARG SECURO_VERSION
