@@ -7,7 +7,7 @@
 
 services:
   securo:
-    image: junkerderprovinz/securo:latest
+    image: junkerderprovinz/securo:latest@sha256:bc1a153249f2151675e31fe5cf2e4e11b878b5960c8b43223320081f9b1fde9b
     container_name: securo
     restart: unless-stopped
     ports:
