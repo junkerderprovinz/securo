@@ -75,7 +75,7 @@ RUN apt-get update \
 # renovate: datasource=pypi depName=PyJWT
 ARG PYJWT_VERSION=2.15.1
 # renovate: datasource=pypi depName=certifi
-ARG CERTIFI_VERSION=2026.10.23
+ARG CERTIFI_VERSION=2026.11.20
 # renovate: datasource=pypi depName=urllib3
 ARG URLLIB3_VERSION=2.8.0
 # renovate: datasource=pypi depName=pypdf
