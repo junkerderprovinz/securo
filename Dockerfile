@@ -85,7 +85,7 @@ ARG DNSPYTHON_VERSION=2.9.2
 # renovate: datasource=pypi depName=pyasn1
 ARG PYASN1_VERSION=0.6.5
 # renovate: datasource=pypi depName=soupsieve
-ARG SOUPSIEVE_VERSION=4.1.1
+ARG SOUPSIEVE_VERSION=4.1.3
 # renovate: datasource=pypi depName=pillow
 ARG PILLOW_VERSION=13.0.0
 # renovate: datasource=pypi depName=opentelemetry-api
