@@ -6,6 +6,11 @@
  * The captures in captures/ are 1440x700 at twice the pixel density, taken from a
  * test instance with made-up accounts and transactions, in Securo's dark mode.
  *
+ * The heading is set in Bree Serif Light and the line below in Bree Light. Both
+ * are licensed and never committed, so HOUSE_FONTS (default
+ * %LOCALAPPDATA%\halleluja-fonts) must hold them as TTF. The browser bar keeps
+ * Lato, fetched once from Google Fonts.
+ *
  * Needs playwright-core installed globally and Chrome.
  * Run: node .github/assets/screenshots/render.mjs
  */
@@ -37,23 +42,25 @@ async function cached(file, url) {
 }
 
 const dataUrl = (buf, type) => `data:${type};base64,${buf.toString("base64")}`;
-const fonts = "https://github.com/google/fonts/raw/main/ofl";
-const bree = dataUrl(await cached("BreeSerif-Regular.ttf", `${fonts}/breeserif/BreeSerif-Regular.ttf`), "font/ttf");
-const lato = dataUrl(await cached("Lato-Regular.ttf", `${fonts}/lato/Lato-Regular.ttf`), "font/ttf");
+// The house typeface is licensed, so it is read from a local folder and never committed.
+const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
+const font = (file) => dataUrl(readFileSync(join(fonts, file)), "font/ttf");
+const lato = dataUrl(await cached("Lato-Regular.ttf", "https://github.com/google/fonts/raw/main/ofl/lato/Lato-Regular.ttf"), "font/ttf");
 const logo = dataUrl(readFileSync(join(here, "..", "icon.svg")), "image/svg+xml");
 
 const STYLE = `
-@font-face { font-family: "Bree Serif"; src: url(${bree}); }
+@font-face { font-family: "Bree Serif"; src: url(${font("bree-serif-light.ttf")}); font-weight: 300; }
+@font-face { font-family: Bree; src: url(${font("bree-light.ttf")}); font-weight: 300; }
 @font-face { font-family: Lato; src: url(${lato}); }
 * { box-sizing: border-box; margin: 0; }
-body { position: relative; width: 1920px; height: 1000px; overflow: hidden; font-family: Lato, sans-serif; background: #0c0c0b; }
+body { position: relative; width: 1920px; height: 1000px; overflow: hidden; font-family: Bree, sans-serif; font-weight: 300; background: #0c0c0b; }
 .wall { position: absolute; inset: 0; background: radial-gradient(55% 60% at 62% 35%, #26231d, #0f0e0c 72%); }
 .relief { position: absolute; width: 56%; left: -12%; top: 4%; transform: rotate(-10deg); opacity: .32;
   filter: grayscale(1) brightness(.36) contrast(1.2) drop-shadow(-2px -2px 0 rgba(255,255,255,.16)) drop-shadow(12px 18px 26px rgba(0,0,0,.85)); }
 .vignette { position: absolute; inset: 0; box-shadow: inset 0 0 200px rgba(0,0,0,.6); }
 .copy { position: absolute; left: 84px; top: 0; bottom: 0; width: 470px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
 .copy img { width: 132px; }
-h1 { font: 400 64px/1.12 "Bree Serif", serif; color: #f4f4f4; }
+h1 { font: 300 64px/1.12 "Bree Serif", serif; color: #f4f4f4; }
 h1 em { font-style: normal; color: #FCC419; }
 .sub { font-size: 28px; line-height: 1.35; color: #9d9481; }
 .stage { position: absolute; left: 600px; top: 148px; width: 1270px; perspective: 2400px; }
@@ -88,7 +95,7 @@ const browser = await chromium.launch({ channel: "chrome" });
 for (const shot of SHOTS) {
   const big = await browser.newPage({ viewport: { width: 1920, height: 1000 }, deviceScaleFactor: 2 });
   await big.setContent(page(shot));
-  await big.evaluate(() => document.fonts.ready);
+  await big.evaluate(() => Promise.all(['300 1em "Bree Serif"', "300 1em Bree", "1em Lato"].map((f) => document.fonts.load(f))));
   const png = await big.screenshot();
   await big.close();
   const small = await browser.newPage({ viewport: { width: 1920, height: 1000 } });
