@@ -6,7 +6,7 @@ name: Build & Push
 # Tags:
 #   * Tag vX.Y.Z           -> X.Y.Z, X.Y, and latest if it is the highest version tag
 #   * Push to main         -> edge, sha-<short>
-#   * Push to other branch -> <branch> on GHCR only, for testing
+#   * Push to other branch -> built and smoke-tested, nothing pushed
 #   * Weekly cron and manual workflow_dispatch -> the newest release rebuilt
 #     without the layer cache, under its version tags and latest
 
@@ -24,7 +24,8 @@ on:
     - cron: '0 6 * * 0'
   workflow_dispatch:
 
-# Two quick pushes to a branch race for its tag, so the older run is cancelled.
+# A newer push to a branch makes the run still going on it pointless, so that
+# one is cancelled.
 concurrency:
   group: ${{ github.workflow }}-${{ (github.ref_type == 'branch' && github.ref != 'refs/heads/main') && github.ref || github.run_id }}
   cancel-in-progress: true
@@ -64,6 +65,10 @@ jobs:
     if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      # Only main, release tags and rebuilds of the newest release publish.
+      # Other branches build and smoke-test.
+      PUBLISH: ${{ github.ref_type == 'tag' || github.ref_name == 'main' || needs.release.outputs.tag != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -231,7 +236,7 @@ jobs:
           fi
 
       - name: Login to GHCR
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           registry: ghcr.io
@@ -259,13 +264,12 @@ jobs:
             type=raw,value=latest,enable=${{ steps.highest.outputs.latest == 'true' || needs.release.outputs.tag != '' }}
             type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
             type=sha,format=short,enable=${{ github.ref == 'refs/heads/main' && needs.release.outputs.tag == '' }}
-            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && !contains(fromJSON('["latest","edge"]'), github.ref_name) && needs.release.outputs.tag == '' }}
           # A rebuild of the newest release carries the release's commit, not main's.
           labels: |
             ${{ needs.release.outputs.tag != '' && format('org.opencontainers.image.revision={0}', needs.release.outputs.sha) || '' }}
 
       - name: Push
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
