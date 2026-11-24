@@ -1,7 +1,7 @@
 /**
  * Generates the Securo README banners and the CA icon. Text is rendered at the
  * origin and placed with <g transform>, because opentype.js produces NaN at a
- * large absolute x. The name is set in Bree Serif Light and the claim in Bree
+ * large absolute x. The name is set in Bree Serif Regular and the claim in Bree
  * Light, read as TTF from HOUSE_FONTS (default %LOCALAPPDATA%\halleluja-fonts).
  * Run: node .github/assets/gen-banner.mjs
  */
@@ -20,7 +20,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 // The house typeface is licensed, so it is read from a local folder and never committed.
 const fonts = process.env.HOUSE_FONTS ?? join(process.env.LOCALAPPDATA ?? tmpdir(), "halleluja-fonts");
-const font = opentype.parse(readFileSync(join(fonts, "bree-serif-light.ttf")).buffer);
+const font = opentype.parse(readFileSync(join(fonts, "bree-serif-regular.ttf")).buffer);
 const claimFont = opentype.parse(readFileSync(join(fonts, "bree-light.ttf")).buffer);
 const bbox = (svg) => new Resvg(svg, { fitTo: { mode: "original" } }).getBBox();
 
