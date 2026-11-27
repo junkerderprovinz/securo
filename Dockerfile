@@ -18,7 +18,7 @@ ARG S6_OVERLAY_VERSION=3.2.3.2
 ARG SECURO_VERSION
 FROM ghcr.io/securo-finance/securo-frontend:${SECURO_VERSION} AS frontend
 
-FROM tianon/gosu:1.20@sha256:e2bba3ccdb5e9fe330a875caf827d0897c682a489b5d3cfea2b64cb55d10d2ad AS gosu
+FROM tianon/gosu:1.20@sha256:3a2f8fe61c750041c211d8dc25d80370de3be31bd79270a504cdde9bd003a4a8 AS gosu
 
 ARG SECURO_VERSION
 FROM ghcr.io/securo-finance/securo-backend:${SECURO_VERSION}
